@@ -306,3 +306,6 @@ ENTRYPOINT ["/init"]
 #   Worker service overrides the command to: yarn worker:prod.
 # ===========================================================================
 FROM twenty AS railway
+
+# Twenty listens on NODE_PORT=3000; expose it for Railway routing and health checks.
+EXPOSE 3000
