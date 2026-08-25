@@ -39,6 +39,12 @@ export class ClickHouseService implements OnModuleInit, OnModuleDestroy {
         },
         application: 'twenty',
         log: { level: ClickHouseLogLevel.OFF },
+        // Reusing a keep-alive socket the server-side load balancer already
+        // closed makes the request hang until request_timeout ("Timeout
+        // error." / "socket hang up" in Sentry) because idle-socket expiry
+        // timers run late when the event loop stalls. A fresh connection per
+        // request is a few milliseconds at our insert rate.
+        keep_alive: { enabled: false },
       });
     }
   }
@@ -94,6 +100,7 @@ export class ClickHouseService implements OnModuleInit, OnModuleDestroy {
       },
       application: 'twenty',
       log: { level: ClickHouseLogLevel.OFF },
+      keep_alive: { enabled: false },
     });
 
     await client.ping();
