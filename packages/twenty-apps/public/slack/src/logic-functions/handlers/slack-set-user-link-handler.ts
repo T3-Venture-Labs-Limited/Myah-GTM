@@ -13,6 +13,7 @@ import { type SlackUserLink } from 'src/logic-functions/types/slack-user-link.ty
 import { currentUserHasWorkspaceMembersPermission } from 'src/logic-functions/utils/current-user-has-workspace-members-permission';
 import { getInstalledSlackTeamId } from 'src/logic-functions/utils/get-installed-slack-team-id';
 import { getSlackClient } from 'src/logic-functions/utils/get-slack-client';
+import { resolveSlackUserByEmail } from 'src/logic-functions/utils/resolve-slack-user-by-email';
 
 // The agent tool passes the input directly, the HTTP route wraps it in a RoutePayload body.
 type SlackSetUserLinkPayload =
@@ -34,17 +35,26 @@ export const slackSetUserLinkHandler = async (
   payload: SlackSetUserLinkPayload,
 ): Promise<SlackToolResult> => {
   const {
-    slackUserId,
+    slackUserId: requestedSlackUserId,
+    email,
     workspaceMemberId,
     slackTeamId: requestedSlackTeamId,
     name,
   } = extractSlackSetUserLinkInput(payload);
 
-  if (!isNonEmptyString(slackUserId) || !isNonEmptyString(workspaceMemberId)) {
+  if (!isNonEmptyString(workspaceMemberId)) {
     return {
       success: false,
       message: 'Missing required fields',
-      error: 'slackUserId and workspaceMemberId are required.',
+      error: 'workspaceMemberId is required.',
+    };
+  }
+
+  if (!isNonEmptyString(requestedSlackUserId) && !isNonEmptyString(email)) {
+    return {
+      success: false,
+      message: 'Missing required fields',
+      error: 'Provide a Slack email or a Slack user id.',
     };
   }
 
@@ -59,9 +69,14 @@ export const slackSetUserLinkHandler = async (
     };
   }
 
+  let slackUserId = requestedSlackUserId;
   let slackTeamId = requestedSlackTeamId;
+  let resolvedName = name;
 
-  if (!isNonEmptyString(slackTeamId)) {
+  const needsSlackClient =
+    !isNonEmptyString(slackUserId) || !isNonEmptyString(slackTeamId);
+
+  if (needsSlackClient) {
     const slackClientResult = await getSlackClient();
 
     if (!slackClientResult.success) {
@@ -72,7 +87,37 @@ export const slackSetUserLinkHandler = async (
       };
     }
 
-    slackTeamId = await getInstalledSlackTeamId(slackClientResult.client);
+    if (!isNonEmptyString(slackUserId) && isNonEmptyString(email)) {
+      const resolvedUser = await resolveSlackUserByEmail(
+        slackClientResult.client,
+        email,
+      );
+
+      if (!isDefined(resolvedUser)) {
+        return {
+          success: false,
+          message: 'No Slack user with that email',
+          error:
+            'No Slack user with that email in the installed workspace. For a guest or Slack Connect user from another workspace, enter their Slack user id instead.',
+        };
+      }
+
+      slackUserId = resolvedUser.slackUserId;
+      slackTeamId = slackTeamId ?? resolvedUser.slackTeamId;
+      resolvedName = resolvedName ?? resolvedUser.displayName;
+    }
+
+    if (!isNonEmptyString(slackTeamId)) {
+      slackTeamId = await getInstalledSlackTeamId(slackClientResult.client);
+    }
+  }
+
+  if (!isNonEmptyString(slackUserId)) {
+    return {
+      success: false,
+      message: 'Could not resolve the Slack user',
+      error: 'Slack did not return a user id for that email.',
+    };
   }
 
   if (!isNonEmptyString(slackTeamId)) {
@@ -105,7 +150,7 @@ export const slackSetUserLinkHandler = async (
       await updateSlackUserLink(client, {
         id: existingLink.id,
         workspaceMemberId,
-        name,
+        name: resolvedName,
         source: SLACK_USER_LINK_SOURCE.MANUAL,
       });
     } else {
@@ -113,7 +158,7 @@ export const slackSetUserLinkHandler = async (
         slackTeamId,
         slackUserId,
         workspaceMemberId,
-        name: name ?? slackUserId,
+        name: resolvedName ?? slackUserId,
         source: SLACK_USER_LINK_SOURCE.MANUAL,
       });
     }

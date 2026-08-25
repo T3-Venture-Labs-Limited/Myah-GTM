@@ -36,6 +36,17 @@ const StyledHint = styled.span`
   font-size: ${() => themeCssVariables.font.size.xs};
 `;
 
+const StyledDisclosureButton = styled.button`
+  align-self: flex-start;
+  background: transparent;
+  border: none;
+  color: ${() => themeCssVariables.color.blue};
+  cursor: pointer;
+  font-family: ${() => themeCssVariables.font.family};
+  font-size: ${() => themeCssVariables.font.size.sm};
+  padding: 0;
+`;
+
 const StyledActions = styled.div`
   display: flex;
 `;
@@ -47,25 +58,40 @@ type SlackUserLinkFormProps = {
 export const SlackUserLinkForm = ({ onLinkSaved }: SlackUserLinkFormProps) => {
   const [selectedMember, setSelectedMember] =
     useState<WorkspaceMemberOption | null>(null);
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [slackUserId, setSlackUserId] = useState('');
   const [slackTeamId, setSlackTeamId] = useState('');
-  const [name, setName] = useState('');
+  const [isConnectUser, setIsConnectUser] = useState(false);
 
   const { setSlackUserLink, isSubmitting } = useSetSlackUserLink();
 
+  const hasSlackIdentity =
+    isNonEmptyString(email.trim()) || isNonEmptyString(slackUserId.trim());
+
   const canSubmit =
-    selectedMember !== null &&
-    isNonEmptyString(slackUserId.trim()) &&
-    !isSubmitting;
+    selectedMember !== null && hasSlackIdentity && !isSubmitting;
+
+  const resetForm = () => {
+    setSelectedMember(null);
+    setEmail('');
+    setName('');
+    setSlackUserId('');
+    setSlackTeamId('');
+    setIsConnectUser(false);
+  };
 
   const handleSubmit = async () => {
-    if (selectedMember === null || !isNonEmptyString(slackUserId.trim())) {
+    if (selectedMember === null || !hasSlackIdentity) {
       return;
     }
 
     const result = await setSlackUserLink({
-      slackUserId: slackUserId.trim(),
       workspaceMemberId: selectedMember.id,
+      email: isNonEmptyString(email.trim()) ? email.trim() : undefined,
+      slackUserId: isNonEmptyString(slackUserId.trim())
+        ? slackUserId.trim()
+        : undefined,
       slackTeamId: isNonEmptyString(slackTeamId.trim())
         ? slackTeamId.trim()
         : undefined,
@@ -78,10 +104,7 @@ export const SlackUserLinkForm = ({ onLinkSaved }: SlackUserLinkFormProps) => {
     });
 
     if (result.success) {
-      setSelectedMember(null);
-      setSlackUserId('');
-      setSlackTeamId('');
-      setName('');
+      resetForm();
       onLinkSaved();
     }
   };
@@ -106,29 +129,18 @@ export const SlackUserLinkForm = ({ onLinkSaved }: SlackUserLinkFormProps) => {
           />
         </StyledField>
         <StyledField>
-          <StyledLabel htmlFor="slack-user-id">Slack user ID</StyledLabel>
+          <StyledLabel htmlFor="slack-email">Slack email</StyledLabel>
           <SlackUserLinkTextInput
-            id="slack-user-id"
-            value={slackUserId}
-            onChange={(event) => setSlackUserId(event.target.value)}
-            placeholder="U0123456789"
-            disabled={isSubmitting}
-          />
-        </StyledField>
-        <StyledField>
-          <StyledLabel htmlFor="slack-team-id">
-            Slack team ID (optional)
-          </StyledLabel>
-          <SlackUserLinkTextInput
-            id="slack-team-id"
-            value={slackTeamId}
-            onChange={(event) => setSlackTeamId(event.target.value)}
-            placeholder="T0123456789"
+            id="slack-email"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="ada@company.com"
             disabled={isSubmitting}
           />
           <StyledHint>
-            Defaults to the installed Slack workspace. Set it for a Slack
-            Connect user, using the team ID their messages carry.
+            The email on their Slack account. We match it to a Slack user in
+            your workspace.
           </StyledHint>
         </StyledField>
         <StyledField>
@@ -143,6 +155,47 @@ export const SlackUserLinkForm = ({ onLinkSaved }: SlackUserLinkFormProps) => {
             disabled={isSubmitting}
           />
         </StyledField>
+        {isConnectUser ? (
+          <>
+            <StyledField>
+              <StyledLabel htmlFor="slack-user-id">Slack user ID</StyledLabel>
+              <SlackUserLinkTextInput
+                id="slack-user-id"
+                value={slackUserId}
+                onChange={(event) => setSlackUserId(event.target.value)}
+                placeholder="U0123456789"
+                disabled={isSubmitting}
+              />
+              <StyledHint>
+                Use this for guests or Slack Connect users whose email is not in
+                your workspace. Takes precedence over the email above.
+              </StyledHint>
+            </StyledField>
+            <StyledField>
+              <StyledLabel htmlFor="slack-team-id">
+                Slack team ID (optional)
+              </StyledLabel>
+              <SlackUserLinkTextInput
+                id="slack-team-id"
+                value={slackTeamId}
+                onChange={(event) => setSlackTeamId(event.target.value)}
+                placeholder="T0123456789"
+                disabled={isSubmitting}
+              />
+              <StyledHint>
+                Defaults to the installed Slack workspace. Set it for a Slack
+                Connect user, using the team ID their messages carry.
+              </StyledHint>
+            </StyledField>
+          </>
+        ) : (
+          <StyledDisclosureButton
+            type="button"
+            onClick={() => setIsConnectUser(true)}
+          >
+            Guest or Slack Connect user? Link by Slack ID instead
+          </StyledDisclosureButton>
+        )}
         <StyledActions>
           <SlackButton
             type="button"
