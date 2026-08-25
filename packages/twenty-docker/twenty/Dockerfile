@@ -298,3 +298,12 @@ LABEL org.opencontainers.image.source=https://github.com/twentyhq/twenty
 LABEL org.opencontainers.image.description="All-in-one Twenty image for local development and SDK usage. Includes PostgreSQL, Redis, server, and worker."
 
 ENTRYPOINT ["/init"]
+
+# ===========================================================================
+# Target: railway
+#   Default final stage for Railway source deploys.
+#   Uses the production Twenty image with backend + frontend.
+#   Server service uses the image default command: node dist/main.
+#   Worker service overrides the command to: yarn worker:prod.
+# ===========================================================================
+FROM twenty AS railway
