@@ -1601,12 +1601,6 @@ msgstr "Kalenderweergave moet een kalenderveld hebben"
 msgid "Calendar view must have a calendar layout"
 msgstr "Kalenderweergave moet een kalenderindeling hebben"
 
-#. js-lingui-id: D9pZ2l
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-flat-view-calendar-fields.util.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-flat-view-calendar-fields.util.ts
-msgid "Calendar widget views only support the month layout"
-msgstr "Agenda-widgetweergaven ondersteunen alleen de maandweergave"
-
 #. js-lingui-id: 0U7DBn
 #: src/engine/workspace-manager/twenty-standard-application/constants/standard-command-menu-item.constant.ts
 msgctxt "commandMenuItem.shortLabel"
@@ -9843,7 +9837,7 @@ msgid "The file extension doesn't match the file content. Please check that your
 msgstr "De bestandsextensie komt niet overeen met de inhoud van het bestand. Controleer of je bestand niet beschadigd is en de juiste extensie heeft."
 
 #. js-lingui-id: H+ZNr6
-#: src/engine/core-modules/file/file-upload/services/file-upload.service.ts
+#: src/engine/core-modules/file/file-upload/services/file-upload-completion.service.ts
 msgid "The file has not been uploaded yet. Please upload it before confirming."
 msgstr "Het bestand is nog niet geüpload. Upload het voordat je bevestigt."
 
@@ -10054,7 +10048,7 @@ msgid "The unsubscribe topic this campaign was sent under"
 msgstr "Het afmeldingsthema waaronder deze campagne is verzonden"
 
 #. js-lingui-id: uYP2Uw
-#: src/engine/core-modules/file/file-upload/services/file-upload.service.ts
+#: src/engine/core-modules/file/file-upload/services/file-upload-completion.service.ts
 #: src/engine/core-modules/file/file-upload/services/file-upload.service.ts
 msgid "The uploaded file does not match the declared size. Please retry the upload."
 msgstr "Het geüploade bestand komt niet overeen met de opgegeven grootte. Probeer de upload opnieuw."
@@ -10346,7 +10340,7 @@ msgid "This field references an object that could not be found"
 msgstr "Dit veld verwijst naar een object dat niet kon worden gevonden"
 
 #. js-lingui-id: 5F02zD
-#: src/engine/core-modules/file/file-upload/services/file-upload.service.ts
+#: src/engine/core-modules/file/file-upload/services/file-upload-completion.service.ts
 msgid "This file format is not supported."
 msgstr "Dit bestandsformaat wordt niet ondersteund."
 
@@ -10428,11 +10422,6 @@ msgstr "Deze objectmachtiging is al ingesteld voor de rol"
 #: src/engine/twenty-orm/exceptions/twenty-orm.exception.ts
 msgid "This operation is not allowed."
 msgstr "Deze bewerking is niet toegestaan."
-
-#. js-lingui-id: eitC3W
-#: src/engine/workspace-datasource/workspace-datasource.service.ts
-msgid "This operation is not allowed. Please try a different approach or contact support if you need assistance."
-msgstr "Deze operatie is niet toegestaan. Probeer een andere methode of neem contact op met de ondersteuning als je hulp nodig hebt."
 
 #. js-lingui-id: bEhTPN
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-action-execution.exception.ts
@@ -12429,8 +12418,8 @@ msgid "You can only update one record with files field at once."
 msgstr "Je kunt slechts één record met het bestandenveld tegelijk bijwerken."
 
 #. js-lingui-id: 4ysDL0
-#: src/engine/twenty-orm-v2/repository/workspace-repository-v2.ts
-#: src/engine/twenty-orm-v2/repository/workspace-repository-v2.ts
+#: src/engine/twenty-orm/repository/workspace-repository.ts
+#: src/engine/twenty-orm/repository/workspace-repository.ts
 msgid "You can only update up to {QUERY_MAX_RECORDS} records at once."
 msgstr ""
 
