@@ -1601,12 +1601,6 @@ msgstr "يجب أن تحتوي طريقة عرض التقويم على حقل ت
 msgid "Calendar view must have a calendar layout"
 msgstr "يجب أن تحتوي طريقة عرض التقويم على تخطيط تقويم"
 
-#. js-lingui-id: D9pZ2l
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-flat-view-calendar-fields.util.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-flat-view-calendar-fields.util.ts
-msgid "Calendar widget views only support the month layout"
-msgstr "عروض أداة التقويم تدعم فقط تخطيط الشهر"
-
 #. js-lingui-id: 0U7DBn
 #: src/engine/workspace-manager/twenty-standard-application/constants/standard-command-menu-item.constant.ts
 msgctxt "commandMenuItem.shortLabel"
@@ -9843,7 +9837,7 @@ msgid "The file extension doesn't match the file content. Please check that your
 msgstr "امتداد الملف لا يتطابق مع محتوى الملف. يرجى التحقق من أن ملفك غير تالف وأن لديه الامتداد الصحيح."
 
 #. js-lingui-id: H+ZNr6
-#: src/engine/core-modules/file/file-upload/services/file-upload.service.ts
+#: src/engine/core-modules/file/file-upload/services/file-upload-completion.service.ts
 msgid "The file has not been uploaded yet. Please upload it before confirming."
 msgstr "لم يتم تحميل الملف بعد. يرجى تحميله قبل التأكيد."
 
@@ -10054,7 +10048,7 @@ msgid "The unsubscribe topic this campaign was sent under"
 msgstr "موضوع إلغاء الاشتراك الذي أُرسلت في إطاره هذه الحملة"
 
 #. js-lingui-id: uYP2Uw
-#: src/engine/core-modules/file/file-upload/services/file-upload.service.ts
+#: src/engine/core-modules/file/file-upload/services/file-upload-completion.service.ts
 #: src/engine/core-modules/file/file-upload/services/file-upload.service.ts
 msgid "The uploaded file does not match the declared size. Please retry the upload."
 msgstr "الملف الذي تم تحميله لا يطابق الحجم المعلن. يرجى إعادة محاولة التحميل."
@@ -10346,7 +10340,7 @@ msgid "This field references an object that could not be found"
 msgstr "يشير هذا الحقل إلى كائن تعذّر العثور عليه"
 
 #. js-lingui-id: 5F02zD
-#: src/engine/core-modules/file/file-upload/services/file-upload.service.ts
+#: src/engine/core-modules/file/file-upload/services/file-upload-completion.service.ts
 msgid "This file format is not supported."
 msgstr "صيغة هذا الملف غير مدعومة."
 
@@ -10428,11 +10422,6 @@ msgstr "تم تعيين إذن الكائن هذا للدور بالفعل"
 #: src/engine/twenty-orm/exceptions/twenty-orm.exception.ts
 msgid "This operation is not allowed."
 msgstr "هذه العملية غير مسموح بها."
-
-#. js-lingui-id: eitC3W
-#: src/engine/workspace-datasource/workspace-datasource.service.ts
-msgid "This operation is not allowed. Please try a different approach or contact support if you need assistance."
-msgstr "هذه العملية غير مسموح بها. يرجى تجربة نهج مختلف أو الاتصال بالدعم إذا كنت بحاجة إلى مساعدة."
 
 #. js-lingui-id: bEhTPN
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-action-execution.exception.ts
@@ -12429,8 +12418,8 @@ msgid "You can only update one record with files field at once."
 msgstr "يمكنك تحديث سجل واحد فقط باستخدام حقل الملفات في كل مرة."
 
 #. js-lingui-id: 4ysDL0
-#: src/engine/twenty-orm-v2/repository/workspace-repository-v2.ts
-#: src/engine/twenty-orm-v2/repository/workspace-repository-v2.ts
+#: src/engine/twenty-orm/repository/workspace-repository.ts
+#: src/engine/twenty-orm/repository/workspace-repository.ts
 msgid "You can only update up to {QUERY_MAX_RECORDS} records at once."
 msgstr "يمكنك تحديث ما يصل إلى {QUERY_MAX_RECORDS} سجل في المرة الواحدة فقط."
 
