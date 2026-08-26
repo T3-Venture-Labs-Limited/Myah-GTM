@@ -7,6 +7,7 @@ import { WorkspaceIteratorService } from 'src/database/commands/command-runners/
 import { type RunOnWorkspaceArgs } from 'src/database/commands/command-runners/workspace.command-runner';
 import { rewriteIsNotNullFilterOperands } from 'src/database/commands/upgrade-version-command/2-36/utils/rewrite-is-not-null-filter-operands.util';
 import { RegisteredWorkspaceCommand } from 'src/engine/core-modules/upgrade/decorators/registered-workspace-command.decorator';
+import { WorkflowVersionCoreSyncService } from 'src/engine/core-modules/workflow/services/workflow-version-core-sync.service';
 import { findFlatEntityByUniversalIdentifier } from 'src/engine/metadata-modules/flat-entity/utils/find-flat-entity-by-universal-identifier.util';
 import { type FlatObjectMetadata } from 'src/engine/metadata-modules/flat-object-metadata/types/flat-object-metadata.type';
 import { WorkspaceOrmManager } from 'src/engine/twenty-orm/workspace-orm.manager';
@@ -26,6 +27,7 @@ export class RewriteIsNotNullWorkflowFilterOperandsCommand extends ProvisionedWo
     protected readonly workspaceIteratorService: WorkspaceIteratorService,
     private readonly workspaceOrmManager: WorkspaceOrmManager,
     private readonly workspaceCacheService: WorkspaceCacheService,
+    private readonly workflowVersionCoreSyncService: WorkflowVersionCoreSyncService,
   ) {
     super(workspaceIteratorService);
   }
@@ -80,7 +82,6 @@ export class RewriteIsNotNullWorkflowFilterOperandsCommand extends ProvisionedWo
       );
 
     const allVersions = await workflowVersionRepository.find();
-
     let updatedCount = 0;
 
     for (const version of allVersions) {
@@ -97,10 +98,22 @@ export class RewriteIsNotNullWorkflowFilterOperandsCommand extends ProvisionedWo
         continue;
       }
 
-      await workflowVersionRepository.update(version.id, {
+      const update = {
         ...(migratedSteps.changed ? { steps: migratedSteps.value } : {}),
         ...(migratedTrigger.changed ? { trigger: migratedTrigger.value } : {}),
-      });
+      };
+
+      await this.workflowVersionCoreSyncService.writeWorkflowVersionAndMirror(
+        workspaceId,
+        async (transactionalWorkflowVersionRepository) => {
+          await transactionalWorkflowVersionRepository.update(
+            version.id,
+            update,
+          );
+
+          return version.id;
+        },
+      );
     }
 
     if (updatedCount > 0) {

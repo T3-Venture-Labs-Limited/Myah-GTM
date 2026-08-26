@@ -48,6 +48,27 @@ describe('rewriteIsNotNullFilterOperands', () => {
     expect(value.settings.filter.stepFilters[0].operand).toBe('IS_NOT_EMPTY');
   });
 
+  it('does not rewrite operand fields in arbitrary action input payloads', () => {
+    const steps = [
+      {
+        type: 'HTTP_REQUEST',
+        settings: {
+          input: {
+            body: {
+              operand: 'IS_NOT_NULL',
+            },
+          },
+        },
+      },
+    ];
+
+    const { value, changed } = rewriteIsNotNullFilterOperands(steps);
+
+    expect(changed).toBe(false);
+    expect(value).toBe(steps);
+    expect(value[0].settings.input.body.operand).toBe('IS_NOT_NULL');
+  });
+
   it('leaves other operands untouched', () => {
     const steps = [
       { settings: { input: { stepFilters: [{ operand: 'IS_NOT_EMPTY' }] } } },
