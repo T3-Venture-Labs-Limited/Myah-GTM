@@ -5,21 +5,15 @@ const LEGACY_NOT_NULL_OPERANDS: Record<string, true> = {
   isNotNull: true,
 };
 
-const rewriteStepFilters = (
-  container: unknown,
+const rewriteFilterArray = (
+  filters: unknown,
 ): { value: unknown; changed: boolean } => {
-  if (
-    typeof container !== 'object' ||
-    container === null ||
-    Array.isArray(container) ||
-    !('stepFilters' in container) ||
-    !Array.isArray(container.stepFilters)
-  ) {
-    return { value: container, changed: false };
+  if (!Array.isArray(filters)) {
+    return { value: filters, changed: false };
   }
 
   let changed = false;
-  const stepFilters = container.stepFilters.map((filter) => {
+  const migratedFilters = filters.map((filter) => {
     if (
       typeof filter !== 'object' ||
       filter === null ||
@@ -37,7 +31,51 @@ const rewriteStepFilters = (
   });
 
   return changed
-    ? { value: { ...container, stepFilters }, changed: true }
+    ? { value: migratedFilters, changed: true }
+    : { value: filters, changed: false };
+};
+
+const rewriteStepFilters = (
+  container: unknown,
+): { value: unknown; changed: boolean } => {
+  if (
+    typeof container !== 'object' ||
+    container === null ||
+    Array.isArray(container) ||
+    !('stepFilters' in container)
+  ) {
+    return { value: container, changed: false };
+  }
+
+  const migratedFilters = rewriteFilterArray(container.stepFilters);
+
+  return migratedFilters.changed
+    ? {
+        value: { ...container, stepFilters: migratedFilters.value },
+        changed: true,
+      }
+    : { value: container, changed: false };
+};
+
+const rewriteRecordFilters = (
+  container: unknown,
+): { value: unknown; changed: boolean } => {
+  if (
+    typeof container !== 'object' ||
+    container === null ||
+    Array.isArray(container) ||
+    !('recordFilters' in container)
+  ) {
+    return { value: container, changed: false };
+  }
+
+  const migratedFilters = rewriteFilterArray(container.recordFilters);
+
+  return migratedFilters.changed
+    ? {
+        value: { ...container, recordFilters: migratedFilters.value },
+        changed: true,
+      }
     : { value: container, changed: false };
 };
 
@@ -58,9 +96,28 @@ const rewriteWorkflowStep = (
   }
 
   const input = step.settings.input;
-  const migratedInput = rewriteStepFilters(input);
+  const migratedStepFilters = rewriteStepFilters(input);
+  let migratedInput = migratedStepFilters.value;
+  let changed = migratedStepFilters.changed;
 
-  if (!migratedInput.changed) {
+  if (
+    typeof migratedInput === 'object' &&
+    migratedInput !== null &&
+    !Array.isArray(migratedInput) &&
+    'filter' in migratedInput
+  ) {
+    const migratedRecordFilters = rewriteRecordFilters(migratedInput.filter);
+
+    if (migratedRecordFilters.changed) {
+      migratedInput = {
+        ...migratedInput,
+        filter: migratedRecordFilters.value,
+      };
+      changed = true;
+    }
+  }
+
+  if (!changed) {
     return { value: step, changed: false };
   }
 
@@ -69,7 +126,7 @@ const rewriteWorkflowStep = (
       ...step,
       settings: {
         ...step.settings,
-        input: migratedInput.value,
+        input: migratedInput,
       },
     },
     changed: true,
