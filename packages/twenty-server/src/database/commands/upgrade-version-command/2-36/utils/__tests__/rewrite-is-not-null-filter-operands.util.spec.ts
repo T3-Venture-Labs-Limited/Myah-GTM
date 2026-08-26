@@ -48,6 +48,35 @@ describe('rewriteIsNotNullFilterOperands', () => {
     expect(value.settings.filter.stepFilters[0].operand).toBe('IS_NOT_EMPTY');
   });
 
+  it('rewrites legacy operands in find-records record filters', () => {
+    const steps = [
+      {
+        type: 'FIND_RECORDS',
+        settings: {
+          input: {
+            filter: {
+              recordFilterGroups: [],
+              recordFilters: [
+                {
+                  fieldMetadataId: 'field-id',
+                  operand: 'IS_NOT_NULL',
+                  value: '',
+                },
+              ],
+            },
+          },
+        },
+      },
+    ];
+
+    const { value, changed } = rewriteIsNotNullFilterOperands(steps);
+
+    expect(changed).toBe(true);
+    expect(value[0].settings.input.filter.recordFilters[0].operand).toBe(
+      'IS_NOT_EMPTY',
+    );
+  });
+
   it('does not rewrite operand fields in arbitrary action input payloads', () => {
     const steps = [
       {
